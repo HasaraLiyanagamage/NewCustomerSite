@@ -12,6 +12,7 @@ interface EmployeeFormData {
   lastName: string
   password?: string
   currentPassword?: string
+  newPassword?: string
 }
 
 export const EmployeeForm: React.FC = () => {
@@ -42,8 +43,9 @@ export const EmployeeForm: React.FC = () => {
       reset({
         username: employee.username,
         email: employee.email,
-        firstName: employee.firstName,
-        lastName: employee.lastName,
+        first_name: employee.first_name,
+        last_name: employee.last_name,
+        role: employee.role || 'employee'
       })
     } catch (error) {
       toast.error('Failed to load employee data')
@@ -53,15 +55,30 @@ export const EmployeeForm: React.FC = () => {
     }
   }
 
-  const onSubmit = async (data: EmployeeFormData) => {
+  const onSubmit = async (formData: EmployeeFormData) => {
     try {
       setLoading(true)
       
+      // Map form data to API user format
+      const { currentPassword, newPassword, ...userData } = formData
+      
+      // Add password update fields if they exist
+      const payload: any = {
+        ...userData,
+        role: formData.role || 'employee' // Default role
+      }
+      
+      // Add password update fields if they exist
+      if (isEdit && newPassword && currentPassword) {
+        payload.password = newPassword
+        payload.current_password = currentPassword
+      }
+      
       if (isEdit) {
-        await usersAPI.update(id!, data)
+        await usersAPI.update(id!, payload)
         toast.success('Employee updated successfully')
       } else {
-        await usersAPI.create(data)
+        await usersAPI.create(userData)
         toast.success('Employee created successfully')
       }
       
@@ -108,12 +125,12 @@ export const EmployeeForm: React.FC = () => {
                   First Name *
                 </label>
                 <input
-                  {...register('firstName', { required: 'First name is required' })}
+                  {...register('first_name', { required: 'First name is required' })}
                   className="input"
                   placeholder="Enter first name"
                 />
-                {errors.firstName && (
-                  <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
+                {errors.first_name && (
+                  <p className="mt-1 text-sm text-red-600">{errors.first_name.message}</p>
                 )}
               </div>
               <div>
@@ -121,12 +138,12 @@ export const EmployeeForm: React.FC = () => {
                   Last Name *
                 </label>
                 <input
-                  {...register('lastName', { required: 'Last name is required' })}
+                  {...register('last_name', { required: 'Last name is required' })}
                   className="input"
                   placeholder="Enter last name"
                 />
-                {errors.lastName && (
-                  <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
+                {errors.last_name && (
+                  <p className="mt-1 text-sm text-red-600">{errors.last_name.message}</p>
                 )}
               </div>
             </div>
@@ -174,6 +191,25 @@ export const EmployeeForm: React.FC = () => {
               </div>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Role *
+                </label>
+                <select
+                  {...register('role', { required: 'Role is required' })}
+                  className="input"
+                  defaultValue="employee"
+                >
+                  <option value="admin">Admin</option>
+                  <option value="employee">Employee</option>
+                </select>
+                {errors.role && (
+                  <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
+                )}
+              </div>
+            </div>
+
             {!isEdit && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -213,7 +249,7 @@ export const EmployeeForm: React.FC = () => {
                   </label>
                   <input
                     type="password"
-                    {...register('password', {
+                    {...register('newPassword', {
                       minLength: { value: 6, message: 'Password must be at least 6 characters' }
                     })}
                     className="input"
