@@ -8,11 +8,12 @@ import toast from 'react-hot-toast'
 interface EmployeeFormData {
   username: string
   email: string
-  firstName: string
-  lastName: string
+  first_name: string
+  last_name: string
+  role: string
   password?: string
-  currentPassword?: string
-  newPassword?: string
+  current_password?: string
+  new_password?: string
 }
 
 export const EmployeeForm: React.FC = () => {
@@ -40,7 +41,7 @@ export const EmployeeForm: React.FC = () => {
       const response = await usersAPI.getById(id!)
       const employee = response.data
       
-      reset({
+reset({
         username: employee.username,
         email: employee.email,
         first_name: employee.first_name,
@@ -60,25 +61,25 @@ export const EmployeeForm: React.FC = () => {
       setLoading(true)
       
       // Map form data to API user format
-      const { currentPassword, newPassword, ...userData } = formData
+      const { current_password, new_password, ...userData } = formData
       
-      // Add password update fields if they exist
+      // Create base payload
       const payload: any = {
         ...userData,
         role: formData.role || 'employee' // Default role
       }
       
       // Add password update fields if they exist
-      if (isEdit && newPassword && currentPassword) {
-        payload.password = newPassword
-        payload.current_password = currentPassword
+      if (isEdit && new_password && current_password) {
+        payload.password = new_password
+        payload.current_password = current_password
       }
       
       if (isEdit) {
         await usersAPI.update(id!, payload)
         toast.success('Employee updated successfully')
       } else {
-        await usersAPI.create(userData)
+await usersAPI.create(userData)
         toast.success('Employee created successfully')
       }
       
@@ -238,7 +239,7 @@ export const EmployeeForm: React.FC = () => {
                   </label>
                   <input
                     type="password"
-                    {...register('currentPassword')}
+                    {...register('current_password')}
                     className="input"
                     placeholder="Enter current password to change password"
                   />
@@ -249,7 +250,7 @@ export const EmployeeForm: React.FC = () => {
                   </label>
                   <input
                     type="password"
-                    {...register('newPassword', {
+                    {...register('new_password', {
                       minLength: { value: 6, message: 'Password must be at least 6 characters' }
                     })}
                     className="input"
